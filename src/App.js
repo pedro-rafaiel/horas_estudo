@@ -11,12 +11,13 @@ const alarmeSom = new Howl({
 });
 
 function App() {
-  const [tempo, setTempo] = useState(0);
+  const [tempoHoras, setTempoHoras] = useState(0);
+  const [tempoMinutos, setTempoMinutos] = useState(0);
   const [assunto, setAssunto] = useState("");
   const [contando, setContando] = useState(false);
   const [tempoRestante, setTempoRestante] = useState(0);
   const [totalEstudo, setTotalEstudo] = useState(
-    Number(localStorage.getItem("totalEstudo")) || 0
+    isNaN(Number(localStorage.getItem("totalEstudo"))) ? 0 : Number(localStorage.getItem("totalEstudo"))
   );
   const [estudos, setEstudos] = useState(
     JSON.parse(localStorage.getItem("estudos")) || []
@@ -32,52 +33,56 @@ function App() {
     } else if (tempoRestante === 0 && contando) {
       alarmeSom.play();
       setContando(false);
-
+  
       setTimeout(() => {
         const continuar = window.confirm("⏳ Deseja continuar estudando?");
         if (continuar) {
           alarmeSom.stop();
-          const tempoEstudado = tempo * 60;
-          const novoTotal = totalEstudo + tempoEstudado / 60;
+          const tempoEstudado = (tempoHoras * 60 + tempoMinutos); // Calculando o tempo total
+          const novoTotal = totalEstudo + tempoEstudado; // Somando ao total armazenado
           setTotalEstudo(novoTotal);
-          localStorage.setItem("totalEstudo", novoTotal);
-
+          localStorage.setItem("totalEstudo", novoTotal); // Salvando no localStorage
+  
           const novoEstudo = {
             nome: assunto || "Sem nome",
             hora: new Date().toLocaleTimeString(),
-            tempo: tempo,
+            tempo: tempoEstudado,
           };
-
+  
           const novosEstudos = [...estudos, novoEstudo];
           setEstudos(novosEstudos);
           localStorage.setItem("estudos", JSON.stringify(novosEstudos));
-
+  
           return;
         }
-
+  
         alarmeSom.stop();
         setMostrarPopup(true);
       }, 500);
     }
-
+  
     return () => clearInterval(intervalo);
-  }, [contando, tempoRestante, totalEstudo, estudos]);
+  }, [contando, tempoRestante, totalEstudo, estudos, tempoHoras, tempoMinutos]);
 
   const iniciarEstudo = () => {
-    if (tempo > 0) {
-      setTempoRestante(tempo * 60);
+    const horas = tempoHoras || 0; 
+    const minutos = tempoMinutos || 0;
+    
+    const tempoTotal = horas * 60 + minutos;
+    if (tempoTotal > 0) {
+      setTempoRestante(tempoTotal * 60);
       setContando(true);
     }
   };
 
   const finalizarEstudos = () => {
-    if (contando) return; 
+    if (contando) return;
     setMostrarPopup(true);
   };
 
   const fecharPopup = () => {
     setMostrarPopup(false);
-    setTotalEstudo(0); 
+    setTotalEstudo(0);
     setEstudos([]);
     localStorage.removeItem("totalEstudo");
     localStorage.removeItem("estudos");
@@ -105,12 +110,29 @@ function App() {
         onChange={(e) => setAssunto(e.target.value)}
       />
 
-      <input
-        type="number"
-        placeholder="Tempo em minutos"
-        value={tempo}
-        onChange={(e) => setTempo(Number(e.target.value))}
-      />
+      <div className="time-inputs">
+        <div className="time-field">
+          <label>Horas</label>
+          <input
+            type="number"
+            placeholder="00"
+            value={tempoHoras}
+            onChange={(e) => setTempoHoras(Number(e.target.value))}
+            min="0"
+          />
+        </div>
+        <div className="time-field">
+          <label>Minutos</label>
+          <input
+            type="number"
+            placeholder="00"
+            value={tempoMinutos}
+            onChange={(e) => setTempoMinutos(Number(e.target.value))}
+            min="0"
+            max="59"
+          />
+        </div>
+      </div>
 
       <button onClick={iniciarEstudo} disabled={contando}>
         <FaClock /> Iniciar Estudo
@@ -125,6 +147,7 @@ function App() {
       <h3 className="total-estudo">
         <FaHistory /> Tempo total de estudo: {totalEstudo} minutos
       </h3>
+
 
       {tempoRestante === 0 && (
         <button className="alarme-btn" onClick={() => alarmeSom.stop()}>
