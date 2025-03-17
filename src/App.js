@@ -11,8 +11,8 @@ const alarmeSom = new Howl({
 });
 
 function App() {
-  const [tempoHoras, setTempoHoras] = useState();
-  const [tempoMinutos, setTempoMinutos] = useState();
+  const [tempoHoras, setTempoHoras] = useState(0);
+  const [tempoMinutos, setTempoMinutos] = useState(0);
   const [assunto, setAssunto] = useState("");
   const [contando, setContando] = useState(false);
   const [tempoRestante, setTempoRestante] = useState(0);
