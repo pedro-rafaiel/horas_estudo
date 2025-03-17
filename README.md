@@ -52,4 +52,4 @@ O projeto estará rodando em **http://localhost:3000** 🚀
 ---
 
 ## 👨‍💻 **Autor**  
-Desenvolvido com Pedro Rafael Pereira de Oliveira.  
+Desenvolvido por Pedro Rafael Pereira de Oliveira.  
