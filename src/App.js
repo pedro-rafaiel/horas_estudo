@@ -7,7 +7,6 @@ import "./App.css";
 
 const alarmeSom = new Howl({
   src: ["/alarme.mp3"],
-  volume: 1,
 });
 
 function App() {
